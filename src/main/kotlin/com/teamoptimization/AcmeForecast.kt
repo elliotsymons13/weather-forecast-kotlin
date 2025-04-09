@@ -12,7 +12,7 @@ data class AcmeForecastingClientResult(val min: String, val max: String, val des
     }
 }
 
-class AcmeForecasterClient constructor() {
+class AcmeForecasterClient constructor(httpClient: HttpHandler) {
 
     fun acmeForecast(httpClient: HttpHandler, day: String, place: String): AcmeForecastingClientResult =
     httpClient(

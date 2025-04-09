@@ -11,9 +11,9 @@ fun main(args: Array<String>) {
 }
 
 private fun printForecast(day: String, place: String) {
-    val forecastClient = AcmeForecasterClient()
-
-    val acmeForecast = forecastClient.acmeForecast(JavaHttpClient(), day, place)
+    val httpClient = JavaHttpClient()
+    val forecastClient = AcmeForecasterClient(httpClient)
+    val acmeForecast = forecastClient.acmeForecast(httpClient, day, place)
 
     val emoji =
         if (acmeForecast.min.toInt() < 5) {

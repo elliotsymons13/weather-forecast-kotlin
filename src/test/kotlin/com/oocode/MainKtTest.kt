@@ -20,9 +20,8 @@ internal class MainKtTest {
 
     @Test
     fun `can parse known response`() {
-        val forecastClient = AcmeForecasterClient()
-
         val httpClient = JavaHttpClient()
+        val forecastClient = AcmeForecasterClient(httpClient)
         val forecastData = forecastClient.acmeForecast(httpClient, "Monday", "Oxford")
 
 //        assertThat(forecastData., containsSubstring("Expect temperatures in the range"))
