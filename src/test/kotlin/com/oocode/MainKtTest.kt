@@ -6,6 +6,9 @@ import com.natpryce.hamkrest.equalTo
 import com.teamoptimization.AcmeForecasterClient
 import moo
 import org.http4k.client.JavaHttpClient
+import org.http4k.core.Response
+import org.http4k.core.Status
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
@@ -20,11 +23,15 @@ internal class MainKtTest {
 
     @Test
     fun `can parse known response`() {
-        val httpClient = JavaHttpClient()
-        val forecastClient = AcmeForecasterClient(httpClient)
-        val forecastData = forecastClient.acmeForecast(httpClient, "Monday", "Oxford")
+//        val httpClient = JavaHttpClient()
+//        val forecastClient = AcmeForecasterClient(httpClient)
 
-//        assertThat(forecastData., containsSubstring("Expect temperatures in the range"))
-        assertNotNull(forecastData)
+        val hardCodedJsonResponse = "{\"min\": 5, \"max\": 12, \"description\": \"Cold and rainy\"}"
+        val forecastClient = AcmeForecasterClient({ Response(Status.OK).body(hardCodedJsonResponse) })
+        val forecastData = forecastClient.acmeForecast("Monday", "Oxford")
+
+        assertEquals(forecastData.max, "12")
+        assertEquals(forecastData.min, "5")
+        assertEquals(forecastData.description, "Cold and rainy")
     }
 }

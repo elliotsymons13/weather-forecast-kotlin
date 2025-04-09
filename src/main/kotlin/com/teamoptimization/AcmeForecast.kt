@@ -12,10 +12,10 @@ data class AcmeForecastingClientResult(val min: String, val max: String, val des
     }
 }
 
-class AcmeForecasterClient constructor(httpClient: HttpHandler) {
+class AcmeForecasterClient constructor(private val httpClient: HttpHandler) {
 
-    fun acmeForecast(httpClient: HttpHandler, day: String, place: String): AcmeForecastingClientResult =
-    httpClient(
+    fun acmeForecast(day: String, place: String): AcmeForecastingClientResult =
+        this.httpClient(
             Request(Method.GET, "https://pqjbv9i19c.execute-api.eu-west-2.amazonaws.com/api/forecast?place=$place&day=$day")
         ).let { response ->
             if (response.status.successful) {
