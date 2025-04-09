@@ -16,7 +16,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertNotNull
 
 abstract class AcmeDataContract {
-    abstract val httpClient: HttpHandler
+    abstract var httpClient: HttpHandler
 
     @Test
     fun `can parse known response`() {
@@ -32,11 +32,13 @@ abstract class AcmeDataContract {
 }
 
 class AcmeDataFake : AcmeDataContract() {
-    private val hardCodedJsonResponse = "{\"min\": 5, \"max\": 12, \"description\": \"Cold and rainy\"}"
-    override val httpClient: HttpHandler  = { Response(Status.OK).body(hardCodedJsonResponse) }
+    private var hardCodedJsonResponse = "{\"min\": 1, \"max\": 1, \"description\": \"meaningless\"}"
+    override var httpClient: HttpHandler  = { Response(Status.OK).body(hardCodedJsonResponse) }
 
     @Test
-    fun `can parse known responsex`() {
+    fun `can parse known response x`() {
+        hardCodedJsonResponse = "{\"min\": 5, \"max\": 12, \"description\": \"Cold and rainy\"}"
+        httpClient = { Response(Status.OK).body(hardCodedJsonResponse) }
 
         val forecastClient = AcmeForecasterClient(httpClient)
         val forecastData = forecastClient.acmeForecast("Monday", "Oxford")
@@ -46,10 +48,24 @@ class AcmeDataFake : AcmeDataContract() {
         assertEquals(forecastData.description, "Cold and rainy")
 
     }
+
+    @Test
+    fun `can parse different known response`() {
+        hardCodedJsonResponse = "{\"min\": 8, \"max\": 2, \"description\": \"Hot and rainy\"}"
+        httpClient = { Response(Status.OK).body(hardCodedJsonResponse) }
+
+        val forecastClient = AcmeForecasterClient(httpClient)
+        val forecastData = forecastClient.acmeForecast("Tuesday", "London")
+
+        assertEquals(forecastData.max, "2")
+        assertEquals(forecastData.min, "8")
+        assertEquals(forecastData.description, "Hot and rainy")
+
+    }
 }
 
 class IntegrationTest : AcmeDataContract() {
-    override val httpClient: HttpHandler = JavaHttpClient()
+    override var httpClient: HttpHandler = JavaHttpClient()
 }
 
 internal class MainKtTest {
