@@ -1,4 +1,4 @@
-import com.teamoptimization.acmeForecast
+import com.teamoptimization.AcmeForecasterClient
 import org.http4k.client.JavaHttpClient
 
 fun main(args: Array<String>) {
@@ -11,7 +11,9 @@ fun main(args: Array<String>) {
 }
 
 private fun printForecast(day: String, place: String) {
-    val acmeForecast = acmeForecast(JavaHttpClient(), day, place)
+    val forecastClient = AcmeForecasterClient()
+
+    val acmeForecast = forecastClient.acmeForecast(JavaHttpClient(), day, place)
 
     val emoji =
         if (acmeForecast.min.toInt() < 5) {
