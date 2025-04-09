@@ -6,17 +6,31 @@ import com.natpryce.hamkrest.equalTo
 import com.teamoptimization.AcmeForecasterClient
 import moo
 import org.http4k.client.JavaHttpClient
-import org.http4k.core.HttpHandler
-import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.*
+import org.http4k.core.Status.Companion.OK
+import org.http4k.routing.bind
+import org.http4k.routing.routes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
 import kotlin.test.assertNotNull
 
+class FakeAcmeData : HttpHandler {
+    private val data = mutableMapOf<String, String>().also {
+        it["Monday Oxford"] = "{\"min\": 5, \"max\": 12, \"description\": \"Cold and rainy\"}"
+        it["Tuesday London"] = "{\"min\": 8, \"max\": 2, \"description\": \"Hot and rainy\"}"
+    }
+
+    override fun invoke(request: Request) =
+        routes("/api/forecast" bind Method.GET to {
+            val key = it.query("day") + " " + it.query("place")
+            Response(OK).body(data[key].toString()) // routes gives http handler ...
+        })(request) // ... and then we immediately invoke it on the request
+}
+
 abstract class AcmeDataContract {
-    abstract var httpClient: HttpHandler
+    abstract val httpClient: HttpHandler
 
     @Test
     fun `can parse known response`() {
@@ -33,12 +47,11 @@ abstract class AcmeDataContract {
 
 class AcmeDataFake : AcmeDataContract() {
     private var hardCodedJsonResponse = "{\"min\": 1, \"max\": 1, \"description\": \"meaningless\"}"
-    override var httpClient: HttpHandler  = { Response(Status.OK).body(hardCodedJsonResponse) }
+    override val httpClient: HttpHandler  = FakeAcmeData()
 
     @Test
     fun `can parse known response x`() {
         hardCodedJsonResponse = "{\"min\": 5, \"max\": 12, \"description\": \"Cold and rainy\"}"
-        httpClient = { Response(Status.OK).body(hardCodedJsonResponse) }
 
         val forecastClient = AcmeForecasterClient(httpClient)
         val forecastData = forecastClient.acmeForecast("Monday", "Oxford")
@@ -46,13 +59,11 @@ class AcmeDataFake : AcmeDataContract() {
         assertEquals(forecastData.max, "12")
         assertEquals(forecastData.min, "5")
         assertEquals(forecastData.description, "Cold and rainy")
-
     }
 
     @Test
     fun `can parse different known response`() {
         hardCodedJsonResponse = "{\"min\": 8, \"max\": 2, \"description\": \"Hot and rainy\"}"
-        httpClient = { Response(Status.OK).body(hardCodedJsonResponse) }
 
         val forecastClient = AcmeForecasterClient(httpClient)
         val forecastData = forecastClient.acmeForecast("Tuesday", "London")
@@ -60,12 +71,11 @@ class AcmeDataFake : AcmeDataContract() {
         assertEquals(forecastData.max, "2")
         assertEquals(forecastData.min, "8")
         assertEquals(forecastData.description, "Hot and rainy")
-
     }
 }
 
 class IntegrationTest : AcmeDataContract() {
-    override var httpClient: HttpHandler = JavaHttpClient()
+    override val httpClient: HttpHandler = JavaHttpClient()
 }
 
 internal class MainKtTest {
