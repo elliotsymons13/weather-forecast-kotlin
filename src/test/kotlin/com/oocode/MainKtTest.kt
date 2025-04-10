@@ -1,7 +1,6 @@
 package com.oocode
 
 import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.teamoptimization.AcmeForecasterClient
 import com.teamoptimization.AcmeForecastingClientResult
@@ -16,7 +15,6 @@ import org.http4k.routing.routes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import kotlin.test.assertContains
 import kotlin.test.assertNotNull
 
 class FakeAcmeData : HttpHandler {

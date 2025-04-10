@@ -4,7 +4,6 @@ import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.format.Jackson
-import java.net.http.HttpClient
 
 data class AcmeForecastingClientResult(val min: String, val max: String, val description: String) {
     companion object {
@@ -14,6 +13,7 @@ data class AcmeForecastingClientResult(val min: String, val max: String, val des
 
 interface Forecaster {
     fun acmeForecast(day: String, place: String): AcmeForecastingClientResult
+// TODO in reality would want to have our own ForecastResult type, rather than tightly coupling with the AcmeForecastingClientResult provided by a third party library
 }
 
 
