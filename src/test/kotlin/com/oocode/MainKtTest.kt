@@ -91,9 +91,14 @@ internal class MainKtTest {
 
 class CachingTests {
 
-    class FakeForecaster : Forecaster {
+    class FakeForecaster constructor(private val forecastList: List<AcmeForecastingClientResult>) : Forecaster {
+        private var i = 0
+
         override fun acmeForecast(day: String, place: String): AcmeForecastingClientResult {
-            return AcmeForecastingClientResult("2", "8", "Hot and rainy")
+            if (i >= forecastList.size) {
+                throw Exception("index too high")
+            }
+            return forecastList[i++]
         }
     }
 
@@ -112,14 +117,27 @@ class CachingTests {
 
     @Test
     fun `cache wrapper test with fake forecaster`() {
-        val forecastClient = FakeForecaster()
+        val forecastList = listOf(
+            AcmeForecastingClientResult("2", "8", "Hot and rainy"), // should be cached
+            AcmeForecastingClientResult("10", "20", "Hot and rainy") // should not be returned, as a correctly caching implementation would have cached the first
+        )
+        val forecastClient = FakeForecaster(forecastList)
 
         val cachingForecastClient = CachingAcmeForecasterClient(forecastClient)
-        val forecastData = cachingForecastClient.acmeForecast("Monday", "Oxford")
+        var forecastData = cachingForecastClient.acmeForecast("Monday", "Oxford")
 
         assertEquals(forecastData.max, "8")
         assertEquals(forecastData.min, "2")
         assertEquals(forecastData.description, "Hot and rainy")
+
+        forecastData = cachingForecastClient.acmeForecast("Monday", "Oxford")
+
+        // if cachingForecastClient caches correctly, it should use the cache rather than the delegate, and give us the first item in the forecastList again
+        assertEquals(forecastData.max, "8")
+        assertEquals(forecastData.min, "2")
+        assertEquals(forecastData.description, "Hot and rainy")
+
+
     }
 }
 
