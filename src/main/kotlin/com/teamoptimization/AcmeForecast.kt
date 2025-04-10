@@ -12,9 +12,24 @@ data class AcmeForecastingClientResult(val min: String, val max: String, val des
     }
 }
 
-class AcmeForecasterClient constructor(private val httpClient: HttpHandler) {
+interface Forecaster {
+    fun acmeForecast(day: String, place: String): AcmeForecastingClientResult
+}
 
-    fun acmeForecast(day: String, place: String): AcmeForecastingClientResult =
+
+class CachingAcmeForecasterClient constructor(private val delegate:Forecaster) : Forecaster {
+//    private var cache mutableMapOf<String, , String>().also {
+//
+//    }
+//
+    override fun acmeForecast(day: String, place: String): AcmeForecastingClientResult {
+        return delegate.acmeForecast(day, place)
+    }
+}
+
+class AcmeForecasterClient constructor(private val httpClient: HttpHandler) : Forecaster {
+
+    override fun acmeForecast(day: String, place: String): AcmeForecastingClientResult =
         this.httpClient(
             Request(Method.GET, "https://pqjbv9i19c.execute-api.eu-west-2.amazonaws.com/api/forecast?place=$place&day=$day")
         ).let { response ->

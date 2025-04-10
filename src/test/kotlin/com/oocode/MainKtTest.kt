@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.teamoptimization.AcmeForecasterClient
+import com.teamoptimization.CachingAcmeForecasterClient
 import moo
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.*
@@ -84,6 +85,20 @@ internal class MainKtTest {
     fun `moo is moo`() {
         assertThat(moo(), equalTo("boo"))
     }
-
-
 }
+
+class CachingTests {
+    @Test
+    fun `cache wrapper test`() {
+        val httpClient: HttpHandler  = FakeAcmeData()
+
+        val forecastClient = AcmeForecasterClient(httpClient)
+        val cachingForecastClient = CachingAcmeForecasterClient(forecastClient)
+        val forecastData = cachingForecastClient.acmeForecast("Tuesday", "London")
+
+        assertEquals(forecastData.max, "2")
+        assertEquals(forecastData.min, "8")
+        assertEquals(forecastData.description, "Hot and rainy")
+    }
+}
+
