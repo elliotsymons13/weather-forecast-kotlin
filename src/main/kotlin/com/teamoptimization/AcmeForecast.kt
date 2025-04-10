@@ -18,12 +18,19 @@ interface Forecaster {
 
 
 class CachingAcmeForecasterClient constructor(private val delegate:Forecaster) : Forecaster {
-//    private var cache mutableMapOf<String, , String>().also {
-//
-//    }
-//
+    private var cache = mutableMapOf<String,AcmeForecastingClientResult>()
+
     override fun acmeForecast(day: String, place: String): AcmeForecastingClientResult {
-        return delegate.acmeForecast(day, place)
+        // check if cache already contains key
+        val key = "$day $place"
+        if (cache.containsKey(key)) { // if it exists, return cache
+            val nullishDefault = AcmeForecastingClientResult("","","")
+            return cache.getOrDefault(key, nullishDefault)
+        } else { //otherwise, use the delegate
+            val newforecast = delegate.acmeForecast(day, place)
+            cache.set(key, newforecast)
+            return newforecast
+        }
     }
 }
 
