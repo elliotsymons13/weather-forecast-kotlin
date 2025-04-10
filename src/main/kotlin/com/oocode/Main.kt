@@ -1,19 +1,21 @@
 import com.teamoptimization.AcmeForecasterClient
+import com.teamoptimization.CachingAcmeForecasterClient
+import com.teamoptimization.Forecaster
 import org.http4k.client.JavaHttpClient
 
 fun main(args: Array<String>) {
     if (args.size != 2) {
         throw RuntimeException("Must specify Day and Place")
     }
-    printForecast(args[0], args[1])
-    printForecast(args[0], args[1])
-    printForecast(args[0], args[1])
+
+    val forecastingClient = CachingAcmeForecasterClient(AcmeForecasterClient(JavaHttpClient()))
+    printForecast(args[0], args[1], forecastingClient)
+    printForecast(args[0], args[1], forecastingClient)
+    printForecast(args[0], args[1], forecastingClient)
 }
 
-private fun printForecast(day: String, place: String) {
-    val httpClient = JavaHttpClient()
-    val forecastClient = AcmeForecasterClient(httpClient)
-    val acmeForecast = forecastClient.acmeForecast(day, place)
+private fun printForecast(day: String, place: String, forecastingClient: Forecaster) {
+    val acmeForecast = forecastingClient.acmeForecast(day, place)
 
     val emoji =
         if (acmeForecast.min.toInt() < 5) {
