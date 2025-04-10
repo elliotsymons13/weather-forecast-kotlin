@@ -4,7 +4,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.teamoptimization.AcmeForecasterClient
+import com.teamoptimization.AcmeForecastingClientResult
 import com.teamoptimization.CachingAcmeForecasterClient
+import com.teamoptimization.Forecaster
 import moo
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.*
@@ -88,16 +90,35 @@ internal class MainKtTest {
 }
 
 class CachingTests {
-    @Test
-    fun `cache wrapper test`() {
-        val httpClient: HttpHandler  = FakeAcmeData()
 
+    class FakeForecaster : Forecaster {
+        override fun acmeForecast(day: String, place: String): AcmeForecastingClientResult {
+            return AcmeForecastingClientResult("2", "8", "Hot and rainy")
+        }
+    }
+
+    @Test
+    fun `cache wrapper test with fake http client real forecaster`() {
+        val httpClient: HttpHandler  = FakeAcmeData()
         val forecastClient = AcmeForecasterClient(httpClient)
+
         val cachingForecastClient = CachingAcmeForecasterClient(forecastClient)
         val forecastData = cachingForecastClient.acmeForecast("Tuesday", "London")
 
         assertEquals(forecastData.max, "2")
         assertEquals(forecastData.min, "8")
+        assertEquals(forecastData.description, "Hot and rainy")
+    }
+
+    @Test
+    fun `cache wrapper test with fake forecaster`() {
+        val forecastClient = FakeForecaster()
+
+        val cachingForecastClient = CachingAcmeForecasterClient(forecastClient)
+        val forecastData = cachingForecastClient.acmeForecast("Monday", "Oxford")
+
+        assertEquals(forecastData.max, "8")
+        assertEquals(forecastData.min, "2")
         assertEquals(forecastData.description, "Hot and rainy")
     }
 }
